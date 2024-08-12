@@ -12,7 +12,6 @@ ordered_spiders = [
     "rally-results",
 ]
 
-
 def main(spider: str):
     settings = get_project_settings()
 
@@ -34,6 +33,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.spider is None:
-        raise Exception("YOU MUST PROVIDE A SPIDER. '-a <spider>")
+        raise Exception("YOU MUST PROVIDE A SPIDER. '-s <spider>")
 
     main(args.spider)

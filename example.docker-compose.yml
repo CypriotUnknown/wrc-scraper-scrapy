@@ -1,0 +1,19 @@
+---
+services:
+  wrc-scraper:
+    container_name: wrc-scraper
+    image: registry.gitlab.com/cypriotunknown/wrc-scraper:latest
+    environment:
+      ENV_FILE_PATH: /run/secrets/env_file
+    volumes:
+      - wrc-scraper:/app/output_data
+    secrets:
+      - env_file
+    command: python main.py --spider news
+    pull_policy: always
+volumes:
+  wrc-scraper:
+    external: true
+secrets:
+  env_file:
+    file: .env
