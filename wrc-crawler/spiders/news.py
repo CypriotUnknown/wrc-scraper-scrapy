@@ -15,6 +15,9 @@ class NewsSpider(scrapy.Spider):
         "https://api.wrc.com/content/filters/wrc-all-latest-news?page=1&language=en&size=100&origin=vcms",  # ALL
         "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=100&class=wrc2&page=1&platform=web",  # WRC2
         "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=100&class=wrc3&page=1&platform=web",  # WRC3
+        "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=20&class=wrc_junior&page=1&platform=web",  # WRC JUNIOR
+        "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=20&class=rally_tv&page=1&platform=web",  # RALLY TV
+        "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=20&class=wrc_best&page=1&platform=web",  # WRC BEST
     ]
 
     def db_upsert_properties(self, item_adapter):

@@ -7,10 +7,12 @@ services:
       ENV_FILE_PATH: /run/secrets/env_file
     volumes:
       - wrc-scraper:/app/output_data
+    networks:
+      - wrc-network
     secrets:
       - env_file
-    command: python main.py --spider news
     pull_policy: always
+    command: --spider news
 volumes:
   wrc-scraper:
     external: true

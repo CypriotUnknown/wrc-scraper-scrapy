@@ -20,7 +20,7 @@ This project requires environment variables to be set for proper operation. Belo
 - news
 - rally-results
 
-Spider name must be passed in the main run command like so:
+Spider name must be passed as an argument (-s or --spider):
 
 ```python
 python3 main.py -s news
