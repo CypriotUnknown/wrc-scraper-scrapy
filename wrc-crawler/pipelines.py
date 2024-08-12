@@ -5,9 +5,11 @@
 
 
 # useful for handling different item types with a single interface
+import os
 from itemadapter import ItemAdapter
 from typing import Optional
 from pymongo import collection, UpdateOne
+import redis
 from scrapy.exceptions import CloseSpider
 from scrapy.crawler import Crawler
 from scrapy.settings import Settings
@@ -90,4 +92,19 @@ class MongoDBPipeline:
 
         # self.collection.update_one(db_unique_id, update, upsert=True)
         spider.logger.debug(f"Item inserted into MongoDB: {item}")
+        return item
+
+
+class RedisPublishPipeline:
+
+    def close_spider(self, spider: Spider):
+        # Publish a message to Redis when the spider closes
+        redis_client = redis.from_url(os.getenv("REDIS_URI"))
+        redis_client.publish(
+            f"discord.wrc.{spider.name}", f"Crawl finished for spider: {spider.name}"
+        )
+        redis_client.close()
+
+    def process_item(self, item, spider: Spider):
+        # You can perform other actions with the item here
         return item
