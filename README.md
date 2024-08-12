@@ -1,6 +1,6 @@
-# Project Configuration
+# WRC scraper
 
-This project requires environment variables to be set for proper operation. Below is the list of environment variables along with their descriptions.
+This is a crawler written in Python with Scrapy. It can scrape rally events, team, drivers, news and results. The data will be stored in a Mongo DB.
 
 ## Required Environment Variables
 
