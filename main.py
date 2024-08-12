@@ -25,7 +25,7 @@ def main(spider: str):
     print(f"Finished crawling spider: '{spider}'")
 
 if __name__ == "__main__":
-    load_dotenv()
+    load_dotenv(os.getenv("ENV_FILE_PATH", None))
     print(f"DB: {os.getenv("MONGO_URI")}")
 
     parser = argparse.ArgumentParser("WRC Scraper", description="Run wrc spider")
