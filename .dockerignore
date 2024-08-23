@@ -4,3 +4,4 @@ venv
 .env
 Dockerfile
 *.docker-compose.yml
+redis-conf.json

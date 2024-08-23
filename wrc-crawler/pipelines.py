@@ -1,22 +1,17 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
+import json
 import os
 from itemadapter import ItemAdapter
 from typing import Optional
 from pymongo import collection, UpdateOne
 import redis
-from scrapy.exceptions import CloseSpider
+from scrapy.exceptions import CloseSpider, DropItem
 from scrapy.crawler import Crawler
 from scrapy.settings import Settings
 from scrapy.item import Item
 from scrapy import Spider
 from utilities.db import MONGO_CLIENT
 from datetime import datetime, UTC
+from .items import News
 
 
 class MongoDBPipeline:
@@ -96,15 +91,81 @@ class MongoDBPipeline:
 
 
 class RedisPublishPipeline:
+    def open_spider(self, spider):
+        # Initialize Redis connection
+        self.redis_client = None
 
-    def close_spider(self, spider: Spider):
-        # Publish a message to Redis when the spider closes
-        redis_client = redis.from_url(os.getenv("REDIS_URI"))
-        redis_client.publish(
-            f"discord.wrc.{spider.name}", f"Crawl finished for spider: {spider.name}"
+        config_file_path = os.getenv("CONFIG_PATH", "redis-conf.json")
+        if os.path.exists(config_file_path):
+            with open(config_file_path, "r") as file:
+                file_json = json.load(file)
+                redis_host = file_json.get("host")
+                redis_port = file_json.get("port")
+                channel_pattern = file_json.get("channel_pattern")
+
+                if (
+                    redis_host is not None
+                    and redis_port is not None
+                    and channel_pattern is not None
+                ):
+                    self.channel_pattern = (
+                        channel_pattern
+                        if channel_pattern[-1] != "."
+                        else channel_pattern.removesuffix(".")
+                    )
+
+                    self.redis_client = redis.Redis(
+                        redis_host,
+                        port=redis_port,
+                        decode_responses=True,
+                        username=file_json.get("username"),
+                        password=file_json.get("password"),
+                    )
+                    self.items: list[Item] = []  # List to hold all scraped items
+                    self.notification_flag: str | None = None
+
+    def close_spider(self, spider):
+        if self.redis_client is not None:
+            dict_to_send = {
+                "articles": self.items,
+                "notificationFlag": self.notification_flag,
+            }
+
+            items_json = json.dumps(dict_to_send, indent=4)
+            category_channel = "motorsports"
+
+            channel_name = ".".join(
+                [
+                    self.channel_pattern,
+                    f"wrc-{spider.name}",
+                    category_channel,
+                    "articles",
+                ]
+            )
+
+            self.redis_client.publish(channel_name, items_json)
+            print(f"published to Redis @ '{channel_name}'")
+
+    def process_item(self, item: News | None, spider):
+        if item is None:
+            print("ITEM IS NULL")
+            raise DropItem(item)
+
+        article = item.convert_to_discord_article()
+
+        if article is None:
+            print("ARTICLE IS NULL")
+            raise DropItem(item)
+
+        if article.title is None:
+            print("ITEM TITLE IS NULL")
+            raise DropItem(item)
+
+        self.notification_flag = (
+            "lastArticleDate" if article.timestamp is not None else "lastArticleTitle"
         )
-        redis_client.close()
 
-    def process_item(self, item, spider: Spider):
-        # You can perform other actions with the item here
+        # Add each item to the list
+        if self.redis_client is not None:
+            self.items.append(article.to_dict())
         return item

@@ -6,6 +6,50 @@
 import scrapy
 import scrapy.exceptions
 from datetime import datetime, timezone
+from dataclasses import dataclass, asdict
+from typing import Optional
+
+
+@dataclass
+class ArticleMedia:
+    url: Optional[str] = None
+
+
+@dataclass
+class ArticleAuthor:
+    name: Optional[str] = None
+    icon_url: Optional[str] = None
+    url: Optional[str] = None
+
+
+@dataclass
+class ArticleFooter:
+    text: Optional[str] = None
+    icon_url: Optional[str] = None
+
+
+@dataclass
+class ArticleField:
+    name: str
+    value: str
+    inline: Optional[bool] = None
+
+
+@dataclass
+class Article:
+    title: Optional[str] = None
+    url: Optional[str] = None
+    timestamp: Optional[str] = None
+    image: Optional[ArticleMedia] = None
+    author: Optional[ArticleAuthor] = None
+    description: Optional[str] = None
+    video: Optional[ArticleMedia] = None
+    thumbnail: Optional[ArticleMedia] = None
+    footer: Optional[ArticleFooter] = None
+    fields: Optional[list[ArticleField]] = None
+
+    def to_dict(self):
+        return asdict(self)
 
 
 class Country(scrapy.Item):
@@ -328,4 +372,21 @@ class News(scrapy.Item):
             image=image,
             title=title.lower() if title is not None else None,
             category=category.lower() if category is not None else None,
+        )
+
+    def convert_to_discord_article(self):
+        if self["category"] is None or self["category"] != "all":
+            return None
+
+        self["category"] = self["category"].upper()
+
+        return Article(
+            title=self["title"],
+            url=self["url"],
+            timestamp=self["date"].isoformat() if self["date"] is not None else None,
+            image=ArticleMedia(self["image"]) if self["image"] is not None else None,
+            description=self["description"],
+            footer=(
+                ArticleFooter(text=f"Category: {self["category"]}")
+            ),
         )

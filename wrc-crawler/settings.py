@@ -63,10 +63,7 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
-    "wrc-crawler.pipelines.MongoDBPipeline": 300,
-    "wrc-crawler.pipelines.RedisPublishPipeline": 400,
-}
+ITEM_PIPELINES = {"wrc-crawler.pipelines.MongoDBPipeline": 300}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

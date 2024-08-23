@@ -6,6 +6,7 @@ from scrapy.settings import BaseSettings
 from ..items import News
 from utilities import set_custom_feed
 from urllib.parse import urlparse, parse_qs
+from scrapy.utils.project import get_project_settings
 
 
 class NewsSpider(scrapy.Spider):
@@ -19,6 +20,13 @@ class NewsSpider(scrapy.Spider):
         "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=20&class=rally_tv&page=1&platform=web",  # RALLY TV
         "https://api.wrc.com/content/filters/newsAndArticles?language=en-US&size=20&class=wrc_best&page=1&platform=web",  # WRC BEST
     ]
+
+    custom_settings = {
+        "ITEM_PIPELINES": {
+            **get_project_settings().get("ITEM_PIPELINES", {}),
+            "wrc-crawler.pipelines.RedisPublishPipeline": 400,
+        }
+    }
 
     def db_upsert_properties(self, item_adapter):
         db_unique_id = {"news_id": item_adapter.get("news_id")}
