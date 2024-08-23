@@ -154,7 +154,6 @@ class RedisPublishPipeline:
         article = item.convert_to_discord_article()
 
         if article is None:
-            print("ARTICLE IS NULL")
             raise DropItem(item)
 
         if article.title is None:

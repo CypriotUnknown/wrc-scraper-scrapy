@@ -375,6 +375,7 @@ class News(scrapy.Item):
         )
 
     def convert_to_discord_article(self):
+        
         if self["category"] is None or self["category"] != "all":
             return None
 
